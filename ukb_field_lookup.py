@@ -55,8 +55,10 @@ ENCODING_PATHS = [
     ENCODING_VALUES_SIMP_DATE_PATH,
 ]
 
+
 class UKBValueType(Enum):
-    """ Data types as indexed within UKB """
+    """Data types as indexed within UKB"""
+
     INT = 11
     CAT_SING = 21
     CAT_MULT = 22
@@ -65,12 +67,15 @@ class UKBValueType(Enum):
     DATE = 51
     TIME = 61
 
+
 # Inverse lookup of UKB data type codes (e.g. 11) to type (e.g. INT)
 UKB_VALUE_TYPE_INV = {i.value: i.name for i in UKBValueType}
 
+
 @dataclass
 class UKBField:
-    """ Field, and optional instance and array IDs """
+    """Field, and optional instance and array IDs"""
+
     field_id: int
     instance_id: Optional[int] = None
     array_id: Optional[int] = None
@@ -82,13 +87,16 @@ class UKBField:
     def from_str(cls, field: str):
         matches = re.match(cls.FIELD_PATTERN, field)
         if not matches:
-            raise ValueError(f"Invalid field '{field}', expected pattern: {cls.FIELD_PATTERN}")
+            raise ValueError(
+                f"Invalid field '{field}', expected pattern: {cls.FIELD_PATTERN}"
+            )
         return cls(
             int(matches.group(1)),
             # TODO: Cast below to int for downstream usage
             matches.group(2) or None,
-            matches.group(3) or None
+            matches.group(3) or None,
         )
+
 
 def _is_singleton(field_id: int, schema_df: pd.DataFrame) -> bool:
     """Check whether a single record is identified for a field
@@ -124,7 +132,7 @@ def get_encoding_values(encoding_id: int) -> list:
     return []
 
 
-def get_ukb_field(field: Union[int,str]) -> dict:
+def get_ukb_field(field: Union[int, str]) -> dict:
     """Find metadata associated with the UKB field
 
     :param field [str,int]: UKB field ID, possibly including array and instance IDs (if str)
@@ -153,7 +161,9 @@ def get_ukb_field(field: Union[int,str]) -> dict:
     else:
         categs = enc.num_members
 
-    return dict(zip(OUT_HEADER, [field_id, prop.title, dtype, categs, enc_id, prop.notes]))
+    return dict(
+        zip(OUT_HEADER, [field_id, prop.title, dtype, categs, enc_id, prop.notes])
+    )
 
 
 def main(args):
