@@ -16,7 +16,6 @@ __author__ = "Thomas Kaplan"
 
 import argparse
 import pandas as pd
-import pdb
 import sys
 import tabulate
 
@@ -106,8 +105,6 @@ def get_ukb_field(field_id: int) -> dict:
         categs = 0
     else:
         categs = enc.num_members
-
-    pdb.set_trace()
 
     return dict(zip(OUT_HEADER, [field_id, prop.title, categs, prop.notes]))
 
