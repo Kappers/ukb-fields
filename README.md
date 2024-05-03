@@ -22,11 +22,11 @@ Refer to [https://biobank.ndph.ox.ac.uk/ukb/list.cgi](https://biobank.ndph.ox.ac
 field_id;title;categories
 4;Biometrics duration;0
 
-> python ukb_field_lookup.py 4 --print
-  field_id  title                  categories  description
-----------  -------------------  ------------  ---------------------------------------------------------------------------------------------------
-         4  Biometrics duration             0  Time taken for participant to do the tests in the biometric station of the Assessment Centre visit.
-
+> python ukb_field_lookup.py 4 5 --print
+  field_id  title                         categories  description
+----------  --------------------------  ------------  ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+         4  Biometrics duration                    0  Time taken for participant to do the tests in the biometric station of the Assessment Centre visit.
+         5  Sample collection duration             0  Time taken for participant to complete the blood phlebotomy station of the Assessment Centre visit. This is longer than the time during which they were actively giving blood.
 # Or make use of helper functions
 > python
 >>> from ukb_field_lookup import get_ukb_field, get_encoding_values
