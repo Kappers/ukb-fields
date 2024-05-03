@@ -26,7 +26,7 @@ import sys
 import tabulate
 from dataclasses import dataclass
 from enum import Enum
-from typing import Optional
+from typing import Optional, Union
 
 VERBOSE = False
 
@@ -124,14 +124,13 @@ def get_encoding_values(encoding_id: int) -> list:
     return []
 
 
-def get_ukb_field(field_str: str) -> dict:
+def get_ukb_field(field: Union[int,str]) -> dict:
     """Find metadata associated with the UKB field
 
-    :param field_str str: UKB field ID, possibly including array and instance IDs
+    :param field [str,int]: UKB field ID, possibly including array and instance IDs (if str)
     :returns dict: metadata if found, else an empty dict
     """
-    
-    field_id = UKBField.from_str(field_str).field_id
+    field_id = UKBField.from_str(field).field_id if isinstance(field, str) else field
 
     data_prop_df = pd.read_csv(DATA_FIELD_PROPERTIES_PATH, delimiter="\t")
     enc_dict_df = pd.read_csv(ENCODING_DICTIONARIES_PATH, delimiter="\t")
