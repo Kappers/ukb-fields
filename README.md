@@ -32,6 +32,8 @@ field_id;title;dtype;categories;encoding_id
 # Or make use of helper functions
 > python
 >>> from ukb_field_lookup import get_ukb_field, get_encoding_values
+>>> get_ukb_field("4-1.0")
+    {'field_id': 4, 'title': 'Biometrics duration', 'dtype': 'INT', 'categories': 0, 'description': 'Time taken for participant ...'}
 >>> get_ukb_field(4)
     {'field_id': 4, 'title': 'Biometrics duration', 'dtype': 'INT', 'categories': 0, 'description': 'Time taken for participant ...'}
 >>> >>> get_encoding_values(100261)
