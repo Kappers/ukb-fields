@@ -5,6 +5,7 @@ dependencies:
   - beautifulsoup4=4.12.3=pyha770c72_0
   - conda=24.3.0=py310hbe9552e_0
   - pip=24.0=pyhd8ed1ab_0
+  - requests=2.31.0=pyhd8ed1ab_0
   - pip:
       - black==24.4.1
       - pandas==2.2.2
