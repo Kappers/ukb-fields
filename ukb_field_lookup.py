@@ -6,7 +6,7 @@ Handy for identifying categorical columns, either by helper or directly executab
 Example:
     >>> from ukb_field_lookup import get_ukb_field, get_encoding_values
     >>> get_ukb_field(4)
-    {'field_id': 4, 'title': 'Biometrics duration', 'categories': 0, 'description': 'Time taken for participant ...'}
+    {'field_id': 4, 'title': 'Biometrics duration', 'dtype': 'INT', 'categories': 0, 'description': 'Time taken for participant ...'}
     >>> >>> get_encoding_values(100261)
     [-1, 1, 2, 3, 4]
 
@@ -18,6 +18,7 @@ import argparse
 import pandas as pd
 import sys
 import tabulate
+from enum import Enum
 
 DATA_FIELD_PROPERTIES_PATH = "schemas/data_field_properties.txt"
 ENCODING_DICTIONARIES_PATH = "schemas/encoding_dictionaries.txt"
@@ -44,8 +45,19 @@ ENCODING_PATHS = [
 
 VERBOSE = False
 
-OUT_HEADER = ["field_id", "title", "categories", "description"]
 
+OUT_HEADER = ["field_id", "title", "dtype", "categories", "encoding_id", "description"]
+
+class UKBValueType(Enum):
+    INT = 11
+    CAT_SING = 21
+    CAT_MULT = 22
+    FLOAT = 31
+    TEXT = 41
+    DATE = 51
+    TIME = 61
+
+UKB_VALUE_TYPE_INV = {i.value: i.name for i in UKBValueType}
 
 def _is_singleton(field_id: int, schema_df: pd.DataFrame) -> bool:
     """Check whether a single record is identified for a field
@@ -95,6 +107,8 @@ def get_ukb_field(field_id: int) -> dict:
         return {}
     prop = prop_df.iloc[0]
 
+    dtype = UKB_VALUE_TYPE_INV[prop.value_type]
+
     enc_id = prop.encoding_id
     enc_df = enc_dict_df[enc_dict_df.encoding_id == enc_id]
     if not _is_singleton(field_id, enc_df):
@@ -106,7 +120,7 @@ def get_ukb_field(field_id: int) -> dict:
     else:
         categs = enc.num_members
 
-    return dict(zip(OUT_HEADER, [field_id, prop.title, categs, prop.notes]))
+    return dict(zip(OUT_HEADER, [field_id, prop.title, dtype, categs, enc_id, prop.notes]))
 
 
 def main(args):

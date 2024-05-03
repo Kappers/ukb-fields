@@ -19,8 +19,8 @@ Refer to [https://biobank.ndph.ox.ac.uk/ukb/list.cgi](https://biobank.ndph.ox.ac
 
 # Run script directly, by default it prints a CSV
 >  python ukb_field_lookup.py 4
-field_id;title;categories
-4;Biometrics duration;0
+field_id;title;dtype;categories;encoding_id
+4;Biometrics duration;INT;0;0
 
 > python ukb_field_lookup.py 4 5 --print
   field_id  title                         categories  description
@@ -28,11 +28,12 @@ field_id;title;categories
          4  Biometrics duration                    0  Time taken for participant to do the tests in the biometric station of the Assessment Centre visit.
          5  Sample collection duration             0  Time taken for participant to complete the blood phlebotomy station of the Assessment Centre visit. This is longer than the time during which they were actively giving blood.
 
+
 # Or make use of helper functions
 > python
 >>> from ukb_field_lookup import get_ukb_field, get_encoding_values
 >>> get_ukb_field(4)
-    {'field_id': 4, 'title': 'Biometrics duration', 'categories': 0, 'description': 'Time taken for participant ...'}
+    {'field_id': 4, 'title': 'Biometrics duration', 'dtype': 'INT', 'categories': 0, 'description': 'Time taken for participant ...'}
 >>> >>> get_encoding_values(100261)
     [-1, 1, 2, 3, 4]
 ```
