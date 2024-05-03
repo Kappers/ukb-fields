@@ -18,11 +18,11 @@ Refer to [https://biobank.ndph.ox.ac.uk/ukb/list.cgi](https://biobank.ndph.ox.ac
 > conda activate ukb-fields
 
 # Run script directly, by default it prints a CSV
->  python ukb_field_lookup.py 4
+>  python ukb_field_lookup.py 4-0.3
 field_id;title;dtype;categories;encoding_id
 4;Biometrics duration;INT;0;0
 
-> python ukb_field_lookup.py 4 5 --print
+> python ukb_field_lookup.py 4 5-1.0 --print
   field_id  title                         categories  description
 ----------  --------------------------  ------------  ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
          4  Biometrics duration                    0  Time taken for participant to do the tests in the biometric station of the Assessment Centre visit.

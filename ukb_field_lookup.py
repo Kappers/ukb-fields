@@ -5,10 +5,15 @@ Handy for identifying categorical columns, either by helper or directly executab
 
 Example:
     >>> from ukb_field_lookup import get_ukb_field, get_encoding_values
-    >>> get_ukb_field(4)
+    >>> get_ukb_field('4')
     {'field_id': 4, 'title': 'Biometrics duration', 'dtype': 'INT', 'categories': 0, 'description': 'Time taken for participant ...'}
     >>> >>> get_encoding_values(100261)
     [-1, 1, 2, 3, 4]
+
+
+TODO:
+    - Instance metadata
+    - Array metadata
 
 """
 
@@ -16,9 +21,16 @@ __author__ = "Thomas Kaplan"
 
 import argparse
 import pandas as pd
+import re
 import sys
 import tabulate
+from dataclasses import dataclass
 from enum import Enum
+from typing import Optional
+
+VERBOSE = False
+
+OUT_HEADER = ["field_id", "title", "dtype", "categories", "encoding_id", "description"]
 
 DATA_FIELD_PROPERTIES_PATH = "schemas/data_field_properties.txt"
 ENCODING_DICTIONARIES_PATH = "schemas/encoding_dictionaries.txt"
@@ -43,12 +55,8 @@ ENCODING_PATHS = [
     ENCODING_VALUES_SIMP_DATE_PATH,
 ]
 
-VERBOSE = False
-
-
-OUT_HEADER = ["field_id", "title", "dtype", "categories", "encoding_id", "description"]
-
 class UKBValueType(Enum):
+    """ Data types as indexed within UKB """
     INT = 11
     CAT_SING = 21
     CAT_MULT = 22
@@ -57,7 +65,30 @@ class UKBValueType(Enum):
     DATE = 51
     TIME = 61
 
+# Inverse lookup of UKB data type codes (e.g. 11) to type (e.g. INT)
 UKB_VALUE_TYPE_INV = {i.value: i.name for i in UKBValueType}
+
+@dataclass
+class UKBField:
+    """ Field, and optional instance and array IDs """
+    field_id: int
+    instance_id: Optional[int] = None
+    array_id: Optional[int] = None
+
+    # UKB field Regex: "84" (FIELD) / "84-0.1" (FIELD-INSTANCE.ARRAY)
+    FIELD_PATTERN = r"(\d+)(?:-(\d+))?(?:\.(\d+))?"
+
+    @classmethod
+    def from_str(cls, field: str):
+        matches = re.match(cls.FIELD_PATTERN, field)
+        if not matches:
+            raise ValueError(f"Invalid field '{field}', expected pattern: {cls.FIELD_PATTERN}")
+        return cls(
+            int(matches.group(1)),
+            # TODO: Cast below to int for downstream usage
+            matches.group(2) or None,
+            matches.group(3) or None
+        )
 
 def _is_singleton(field_id: int, schema_df: pd.DataFrame) -> bool:
     """Check whether a single record is identified for a field
@@ -93,12 +124,15 @@ def get_encoding_values(encoding_id: int) -> list:
     return []
 
 
-def get_ukb_field(field_id: int) -> dict:
+def get_ukb_field(field_str: str) -> dict:
     """Find metadata associated with the UKB field
 
-    :param field_id int: UKB field ID
+    :param field_str str: UKB field ID, possibly including array and instance IDs
     :returns dict: metadata if found, else an empty dict
     """
+    
+    field_id = UKBField.from_str(field_str).field_id
+
     data_prop_df = pd.read_csv(DATA_FIELD_PROPERTIES_PATH, delimiter="\t")
     enc_dict_df = pd.read_csv(ENCODING_DICTIONARIES_PATH, delimiter="\t")
 
@@ -146,7 +180,7 @@ def main(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
-        "field_ids", metavar="N", nargs="+", type=int, help="UKB field index"
+        "field_ids", metavar="N", nargs="+", type=str, help="UKB field index"
     )
     parser.add_argument("--print", action="store_true", help="Print in tabulated form")
     parser.add_argument(
