@@ -17,6 +17,10 @@ Refer to [https://biobank.ndph.ox.ac.uk/ukb/list.cgi](https://biobank.ndph.ox.ac
 > conda env create -f environment.yml
 > conda activate ukb-fields
 
+# Download schemas
+> python retrieve_ukb_schemas.py
+...
+
 # Run script directly, by default it prints a CSV
 >  python ukb_field_lookup.py 4-0.3
 field_id;title;dtype;categories;encoding_id
