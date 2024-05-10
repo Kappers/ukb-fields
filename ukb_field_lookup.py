@@ -20,6 +20,8 @@ TODO:
 __author__ = "Thomas Kaplan"
 
 import argparse
+import functools
+import os
 import pandas as pd
 import re
 import sys
@@ -32,18 +34,31 @@ VERBOSE = False
 
 OUT_HEADER = ["field_id", "title", "dtype", "categories", "encoding_id", "description"]
 
-DATA_FIELD_PROPERTIES_PATH = "schemas/data_field_properties.txt"
-ENCODING_DICTIONARIES_PATH = "schemas/encoding_dictionaries.txt"
+DIR_PATH = os.path.dirname(os.path.realpath(__file__))
+DATA_FIELD_PROPERTIES_PATH = f"{DIR_PATH}/schemas/data_field_properties.txt"
+ENCODING_DICTIONARIES_PATH = f"{DIR_PATH}/schemas/encoding_dictionaries.txt"
 NOT_ENCODED = "NOT-ENCODED"
 
-ENCODING_VALUES_HIER_INT_PATH = "schemas/values_for_hierarchical_integer_encodings.txt"
-ENCODING_VALUES_HIER_STR_PATH = "schemas/values_for_hierarchical_string_encodings.txt"
-ENCODING_VALUES_SIMP_INT_PATH = "schemas/values_for_simple_integer_encodings.txt"
-ENCODING_VALUES_SIMP_STR_PATH = "schemas/values_for_simple_string_encodings.txt"
-ENCODING_VALUES_SIMP_TIME_PATH = "schemas/values_for_simple_date_encodings.txt"
-ENCODING_VALUES_SIMP_FLOAT_PATH = "schemas/values_for_simple_time_encodings.txt"
+ENCODING_VALUES_HIER_INT_PATH = (
+    f"{DIR_PATH}/schemas/values_for_hierarchical_integer_encodings.txt"
+)
+ENCODING_VALUES_HIER_STR_PATH = (
+    f"{DIR_PATH}/schemas/values_for_hierarchical_string_encodings.txt"
+)
+ENCODING_VALUES_SIMP_INT_PATH = (
+    f"{DIR_PATH}/schemas/values_for_simple_integer_encodings.txt"
+)
+ENCODING_VALUES_SIMP_STR_PATH = (
+    f"{DIR_PATH}/schemas/values_for_simple_string_encodings.txt"
+)
+ENCODING_VALUES_SIMP_TIME_PATH = (
+    f"{DIR_PATH}/schemas/values_for_simple_date_encodings.txt"
+)
+ENCODING_VALUES_SIMP_FLOAT_PATH = (
+    f"{DIR_PATH}/schemas/values_for_simple_time_encodings.txt"
+)
 ENCODING_VALUES_SIMP_DATE_PATH = (
-    "schemas/values_for_simple_real_(floating-point)_encodings.txt"
+    f"{DIR_PATH}/schemas/values_for_simple_real_(floating-point)_encodings.txt"
 )
 ENCODING_PATHS = [
     ENCODING_VALUES_HIER_INT_PATH,
@@ -132,38 +147,52 @@ def get_encoding_values(encoding_id: int) -> list:
     return []
 
 
+class UKBFieldMetadata:
+
+    _data_prop_df = pd.read_csv(DATA_FIELD_PROPERTIES_PATH, delimiter="\t")
+    _enc_dict_df = pd.read_csv(ENCODING_DICTIONARIES_PATH, delimiter="\t")
+
+    @classmethod
+    def get_field(cls, field: Union[int, str]) -> dict:
+        """Find metadata associated with a field
+
+        :param field [str,int]: UKB field ID, possibly including array and instance IDs (if str)
+        :returns dict: metadata if found, else an empty dict
+        """
+        field_id = (
+            UKBField.from_str(field).field_id if isinstance(field, str) else field
+        )
+
+        prop_df = cls._data_prop_df[cls._data_prop_df.field_id == field_id]
+        if not _is_singleton(field_id, prop_df):
+            return {}
+        prop = prop_df.iloc[0]
+
+        dtype = UKB_VALUE_TYPE_INV[prop.value_type]
+
+        enc_id = prop.encoding_id
+        enc_df = cls._enc_dict_df[cls._enc_dict_df.encoding_id == enc_id]
+        if not _is_singleton(field_id, enc_df):
+            return {}
+
+        enc = enc_df.iloc[0]
+        if enc.title == NOT_ENCODED:
+            categs = 0
+        else:
+            categs = enc.num_members
+
+        return dict(
+            zip(OUT_HEADER, [field_id, prop.title, dtype, categs, enc_id, prop.notes])
+        )
+
+
 def get_ukb_field(field: Union[int, str]) -> dict:
     """Find metadata associated with the UKB field
 
     :param field [str,int]: UKB field ID, possibly including array and instance IDs (if str)
     :returns dict: metadata if found, else an empty dict
     """
-    field_id = UKBField.from_str(field).field_id if isinstance(field, str) else field
-
-    data_prop_df = pd.read_csv(DATA_FIELD_PROPERTIES_PATH, delimiter="\t")
-    enc_dict_df = pd.read_csv(ENCODING_DICTIONARIES_PATH, delimiter="\t")
-
-    prop_df = data_prop_df[data_prop_df.field_id == field_id]
-    if not _is_singleton(field_id, prop_df):
-        return {}
-    prop = prop_df.iloc[0]
-
-    dtype = UKB_VALUE_TYPE_INV[prop.value_type]
-
-    enc_id = prop.encoding_id
-    enc_df = enc_dict_df[enc_dict_df.encoding_id == enc_id]
-    if not _is_singleton(field_id, enc_df):
-        return {}
-
-    enc = enc_df.iloc[0]
-    if enc.title == NOT_ENCODED:
-        categs = 0
-    else:
-        categs = enc.num_members
-
-    return dict(
-        zip(OUT_HEADER, [field_id, prop.title, dtype, categs, enc_id, prop.notes])
-    )
+    return UKBFieldMetadata.get_field(field)
 
 
 def main(args):
@@ -187,7 +216,9 @@ def main(args):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description=__doc__)
+    parser = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawTextHelpFormatter
+    )
     parser.add_argument(
         "field_ids", metavar="N", nargs="+", type=str, help="UKB field index"
     )
