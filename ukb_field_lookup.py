@@ -81,6 +81,7 @@ class UKBValueType(Enum):
     TEXT = 41
     DATE = 51
     TIME = 61
+    COMPOUND = 101
     UNKNOWN = 666 # Dummy value to catch cases of un-mapped value type identifiers
 
 
@@ -171,9 +172,9 @@ class UKBFieldMetadata:
 
         def _get_value_type_id(value_type):
             try:
-               return UKB_VALUE_TYPE_INV[value_type]
+                return UKB_VALUE_TYPE_INV[value_type]
             except KeyError:
-               return UKBValueType.UNKNOWN.name
+                return UKBValueType.UNKNOWN.name
         dtype = _get_value_type_id(prop.value_type)
 
         enc_id = prop.encoding_id
