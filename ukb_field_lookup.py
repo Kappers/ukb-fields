@@ -81,6 +81,7 @@ class UKBValueType(Enum):
     TEXT = 41
     DATE = 51
     TIME = 61
+    UNKNOWN = 666 # Dummy value to catch cases of un-mapped value type identifiers
 
 
 # Inverse lookup of UKB data type codes (e.g. 11) to type (e.g. INT)
@@ -168,7 +169,12 @@ class UKBFieldMetadata:
             return {}
         prop = prop_df.iloc[0]
 
-        dtype = UKB_VALUE_TYPE_INV[prop.value_type]
+        def _get_value_type_id(value_type):
+            try:
+               return UKB_VALUE_TYPE_INV[value_type]
+            except KeyError:
+               return UKBValueType.UNKNOWN
+        dtype = _get_value_type_id(prop.value_type)
 
         enc_id = prop.encoding_id
         enc_df = cls._enc_dict_df[cls._enc_dict_df.encoding_id == enc_id]
