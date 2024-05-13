@@ -173,7 +173,7 @@ class UKBFieldMetadata:
             try:
                return UKB_VALUE_TYPE_INV[value_type]
             except KeyError:
-               return UKBValueType.UNKNOWN
+               return UKBValueType.UNKNOWN.name
         dtype = _get_value_type_id(prop.value_type)
 
         enc_id = prop.encoding_id
